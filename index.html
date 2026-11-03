@@ -2,48 +2,122 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Редактор Апостол Кликера</title>
     <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
     <script src="https://unpkg.com/grapesjs"></script>
     <style>
-        body, html { height: 100%; margin: 0; }
-        #gjs { height: 100%; }
-        /* Кнопка сохранения */
-        .save-btn {
-            position: absolute; top: 10px; right: 10px; z-index: 9999;
-            background: #2457d6; color: white; border: none; padding: 10px 20px;
-            border-radius: 8px; font-weight: bold; cursor: pointer;
+        body, html { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #f0f0f0; 
+            overflow: hidden;
         }
+        
+        /* Рабочая область (холст) сверху */
+        #gjs { 
+            height: calc(100% - 70px); /* Оставляем место для панели снизу */
+            border: none; 
+        }
+
+        /* Кнопка Сохранить */
+        .save-btn {
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            z-index: 9999;
+            background: #2457d6; 
+            color: white; 
+            border: none; 
+            padding: 8px 15px;
+            border-radius: 6px; 
+            font-weight: bold; 
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Скрываем стандартные панели GrapesJS, чтобы не мешали на телефоне */
+        .gjs-pn-panel { display: none !important; }
+        
+        /* Стили для нашей нижней панели с блоками */
+        .bottom-blocks {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: #fff;
+            border-top: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: auto; /* Прокрутка, если блоков много */
+            padding: 0 10px;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        /* Сами блоки (Монетка, Текст, Кнопка) */
+        .block-item {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            background: #f8f8f8;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #333;
+            text-align: center;
+            cursor: grab;
+        }
+        .block-item:active { cursor: grabbing; }
+        .block-item .icon { font-size: 24px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
-    <button class="save-btn" id="save-btn">Сохранить в Termux</button>
+    <!-- Кнопка сохранения всегда на виду -->
+    <button class="save-btn" id="save-btn">Сохранить</button>
+    
+    <!-- Сюда встраивается сам редактор -->
     <div id="gjs"></div>
+
+    <!-- Наша кастомная панель с блоками снизу -->
+    <div class="bottom-blocks" id="bottom-blocks">
+        <!-- Блоки будут генерироваться через JS -->
+    </div>
+
     <script>
         const editor = grapesjs.init({
             container: '#gjs',
             fromElement: true,
             height: '100%',
+            width: '100%',
             storageManager: false,
-            // Настройки блоков (то, что ты будешь перетаскивать)
+            // Убираем стандартные панели, нам нужна только рабочая область
+            panels: { defaults: [] },
+            // Настраиваем блоки
             blockManager: {
-                appendTo: '#blocks',
+                appendTo: '#bottom-blocks', // Сюда будут падать наши кнопки
                 blocks: [
                     {
                         id: 'text',
-                        label: 'Текст',
-                        content: '<div style="padding:10px; font-family:sans-serif;">Новый текст</div>',
+                        label: '<div class="block-item"><span class="icon">📝</span>Текст</div>',
+                        content: '<div style="padding:10px; font-family:sans-serif; text-align:center;">Новый текст</div>',
                     },
                     {
                         id: 'coin',
-                        label: 'Монетка',
+                        label: '<div class="block-item"><span class="icon">🪙</span>Монетка</div>',
                         content: '<div style="width:100px; height:100px; background:gold; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px; margin:20px auto;">🪙</div>',
                     },
                     {
                         id: 'button',
-                        label: 'Кнопка',
-                        content: '<button style="padding:10px 20px; background:#2457d6; color:white; border:none; border-radius:8px;">Кнопка</button>',
+                        label: '<div class="block-item"><span class="icon">🔘</span>Кнопка</div>',
+                        content: '<button style="padding:10px 20px; background:#2457d6; color:white; border:none; border-radius:8px; width:100%; margin-top:10px;">Кнопка</button>',
                     }
                 ]
             }
@@ -51,7 +125,7 @@
 
         // Логика кнопки "Сохранить"
         document.getElementById('save-btn').addEventListener('click', () => {
-            const html = editor.getHtml(); // Получаем то, что ты собрал
+            const html = editor.getHtml();
             
             // ВСТАВЬ СЮДА ССЫЛКУ ОТ CLOUDFLARED (из Termux)
             const SERVER_URL = "https://aus-loan-specialized-instructors.trycloudflare.com";
