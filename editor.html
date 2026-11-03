@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор Апостол Кликера</title>
+    <link rel="stylesheet" href="https://unpkg.com/grapesjs/dist/css/grapes.min.css">
+    <script src="https://unpkg.com/grapesjs"></script>
+    <style>
+        body, html { height: 100%; margin: 0; }
+        #gjs { height: 100%; }
+        /* Кнопка сохранения */
+        .save-btn {
+            position: absolute; top: 10px; right: 10px; z-index: 9999;
+            background: #2457d6; color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="save-btn" id="save-btn">Сохранить в Termux</button>
+    <div id="gjs"></div>
+    <script>
+        const editor = grapesjs.init({
+            container: '#gjs',
+            fromElement: true,
+            height: '100%',
+            storageManager: false,
+            // Настройки блоков (то, что ты будешь перетаскивать)
+            blockManager: {
+                appendTo: '#blocks',
+                blocks: [
+                    {
+                        id: 'text',
+                        label: 'Текст',
+                        content: '<div style="padding:10px; font-family:sans-serif;">Новый текст</div>',
+                    },
+                    {
+                        id: 'coin',
+                        label: 'Монетка',
+                        content: '<div style="width:100px; height:100px; background:gold; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:40px; margin:20px auto;">🪙</div>',
+                    },
+                    {
+                        id: 'button',
+                        label: 'Кнопка',
+                        content: '<button style="padding:10px 20px; background:#2457d6; color:white; border:none; border-radius:8px;">Кнопка</button>',
+                    }
+                ]
+            }
+        });
+
+        // Логика кнопки "Сохранить"
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const html = editor.getHtml(); // Получаем то, что ты собрал
+            
+            // ВСТАВЬ СЮДА ССЫЛКУ ОТ CLOUDFLARED (из Termux)
+            const SERVER_URL = "https://aus-loan-specialized-instructors.trycloudflare.com";
+
+            fetch(SERVER_URL, {
+                method: 'POST',
+                body: html
+            })
+            .then(response => {
+                if(response.ok) alert('✅ Успешно сохранено!');
+                else alert('❌ Ошибка сохранения');
+            })
+            .catch(err => alert('❌ Ошибка: ' + err.message));
+        });
+    </script>
+</body>
+</html>
